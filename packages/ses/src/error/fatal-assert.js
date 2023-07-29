@@ -28,7 +28,7 @@ if (typeof abandon === 'function') {
 }
 
 /**
- * @type {Partial<{assert: Assert}>}
+ * @type {Partial<{assert: import('./types.js').Assert}>}
  *
  * When run in the start compartment, this sniffs to see if there are known
  * forms of host-provided functions for immediately terminating the enclosing

@@ -44,9 +44,9 @@ import './internal-types.js';
 // In theory we should do a deep inspection to detect for example an array
 // containing an error. We currently do not detect these and may never.
 
-/** @typedef {keyof VirtualConsole | 'profile' | 'profileEnd'} ConsoleProps */
+/** @typedef {keyof import('./types.js').VirtualConsole | 'profile' | 'profileEnd'} ConsoleProps */
 
-/** @type {readonly [ConsoleProps, LogSeverity | undefined][]} */
+/** @type {readonly [ConsoleProps, import('./types.js').LogSeverity | undefined][]} */
 const consoleLevelMethods = freeze([
   ['debug', 'debug'], // (fmt?, ...args) verbose level on Chrome
   ['log', 'log'], // (fmt?, ...args) info level on Chrome
@@ -60,7 +60,7 @@ const consoleLevelMethods = freeze([
   ['groupCollapsed', 'log'], // (fmt?, ...args)
 ]);
 
-/** @type {readonly [ConsoleProps, LogSeverity | undefined][]} */
+/** @type {readonly [ConsoleProps, import('./types.js').LogSeverity | undefined][]} */
 const consoleOtherMethods = freeze([
   ['assert', 'error'], // (value, fmt?, ...args)
   ['timeLog', 'log'], // (label?, ...args) no fmt string
@@ -84,7 +84,7 @@ const consoleOtherMethods = freeze([
   ['timeStamp', undefined], // (label?)
 ]);
 
-/** @type {readonly [ConsoleProps, LogSeverity | undefined][]} */
+/** @type {readonly [ConsoleProps, import('./types.js').LogSeverity | undefined][]} */
 export const consoleWhitelist = freeze([
   ...consoleLevelMethods,
   ...consoleOtherMethods,
@@ -119,7 +119,7 @@ export const consoleWhitelist = freeze([
 
 // /////////////////////////////////////////////////////////////////////////////
 
-/** @type {MakeLoggingConsoleKit} */
+/** @type {import('./internal-types.js').MakeLoggingConsoleKit} */
 const makeLoggingConsoleKit = (
   loggedErrorHandler,
   { shouldResetForDebugging = false } = {},
@@ -156,7 +156,7 @@ const makeLoggingConsoleKit = (
   };
   freeze(takeLog);
 
-  const typedLoggingConsole = /** @type {VirtualConsole} */ (loggingConsole);
+  const typedLoggingConsole = /** @type {import('./types.js').VirtualConsole} */ (loggingConsole);
 
   return freeze({ loggingConsole: typedLoggingConsole, takeLog });
 };
@@ -165,14 +165,14 @@ export { makeLoggingConsoleKit };
 
 // /////////////////////////////////////////////////////////////////////////////
 
-/** @type {ErrorInfo} */
+/** @type {import('./internal-types.js').ErrorInfo} */
 const ErrorInfo = {
   NOTE: 'ERROR_NOTE:',
   MESSAGE: 'ERROR_MESSAGE:',
 };
 freeze(ErrorInfo);
 
-/** @type {MakeCausalConsole} */
+/** @type {import('./internal-types.js').MakeCausalConsole} */
 const makeCausalConsole = (baseConsole, loggedErrorHandler) => {
   const { getStackString, tagError, takeMessageLogArgs, takeNoteLogArgsArray } =
     loggedErrorHandler;
@@ -194,9 +194,9 @@ const makeCausalConsole = (baseConsole, loggedErrorHandler) => {
   };
 
   /**
-   * @param {LogSeverity} severity
+   * @param {import('./types.js').LogSeverity} severity
    * @param {Error} error
-   * @param {ErrorInfoKind} kind
+   * @param {import('./internal-types.js').ErrorInfoKind} kind
    * @param {readonly any[]} logArgs
    * @param {Array<Error>} subErrorsSink
    */
@@ -212,7 +212,7 @@ const makeCausalConsole = (baseConsole, loggedErrorHandler) => {
   /**
    * Logs the `subErrors` within a group name mentioning `optTag`.
    *
-   * @param {LogSeverity} severity
+   * @param {import('./types.js').LogSeverity} severity
    * @param {Error[]} subErrors
    * @param {string | undefined} optTag
    * @returns {void}
@@ -250,7 +250,7 @@ const makeCausalConsole = (baseConsole, loggedErrorHandler) => {
 
   const errorsLogged = new WeakSet();
 
-  /** @type {(severity: LogSeverity) => NoteCallback} */
+  /** @type {(severity: import('./types.js').LogSeverity) => import('./internal-types.js').NoteCallback} */
   const makeNoteCallback = severity => (error, noteLogArgs) => {
     const subErrors = [];
     // Annotation arrived after the error has already been logged,
@@ -260,7 +260,7 @@ const makeCausalConsole = (baseConsole, loggedErrorHandler) => {
   };
 
   /**
-   * @param {LogSeverity} severity
+   * @param {import('./types.js').LogSeverity} severity
    * @param {Error} error
    */
   const logError = (severity, error) => {
@@ -345,14 +345,14 @@ const makeCausalConsole = (baseConsole, loggedErrorHandler) => {
   });
 
   const causalConsole = fromEntries([...levelMethods, ...otherMethods]);
-  return /** @type {VirtualConsole} */ (freeze(causalConsole));
+  return /** @type {import('./types.js').VirtualConsole} */ (freeze(causalConsole));
 };
 freeze(makeCausalConsole);
 export { makeCausalConsole };
 
 // /////////////////////////////////////////////////////////////////////////////
 
-/** @type {FilterConsole} */
+/** @type {import('./types.js').FilterConsole} */
 const filterConsole = (baseConsole, filter, _topic = undefined) => {
   // TODO do something with optional topic string
   const whitelist = arrayFilter(
@@ -374,7 +374,7 @@ const filterConsole = (baseConsole, filter, _topic = undefined) => {
     return [name, freeze(method)];
   });
   const filteringConsole = fromEntries(methods);
-  return /** @type {VirtualConsole} */ (freeze(filteringConsole));
+  return /** @type {import('./types.js').VirtualConsole} */ (freeze(filteringConsole));
 };
 freeze(filterConsole);
 export { filterConsole };

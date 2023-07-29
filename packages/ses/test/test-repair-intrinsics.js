@@ -7,7 +7,7 @@ import { getAnonymousIntrinsics } from '../src/get-anonymous-intrinsics.js';
 import {
   makeCompartmentConstructor,
   CompartmentPrototype,
-} from '../src/compartment-shim.js';
+} from '../src/compartment.js';
 
 // eslint-disable-next-line no-eval
 if (!eval.toString().includes('native code')) {
@@ -26,11 +26,7 @@ test('permitted prototypes - on', t => {
   Object.prototype.hasOwnProperty.foo = 1;
 
   console.time('Benchmark repairIntrinsics()');
-  const hardenIntrinsics = repairIntrinsics(
-    makeCompartmentConstructor,
-    CompartmentPrototype,
-    getAnonymousIntrinsics,
-  );
+  repairIntrinsics();
   console.timeEnd('Benchmark repairIntrinsics()');
 
   console.time('Benchmark hardenIntrinsics()');

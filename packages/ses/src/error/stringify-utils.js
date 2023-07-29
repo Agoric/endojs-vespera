@@ -19,7 +19,7 @@ import {
 /**
  * Joins English terms with commas and an optional conjunction.
  *
- * @param {(string | StringablePayload)[]} terms
+ * @param {(string | import('./types.js').StringablePayload)[]} terms
  * @param {"and" | "or"} conjunction
  */
 export const enJoin = (terms, conjunction) => {

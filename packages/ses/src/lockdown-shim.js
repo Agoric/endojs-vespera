@@ -49,7 +49,7 @@ import { tameConsole } from './error/tame-console.js';
 import tameErrorConstructor from './error/tame-error-constructor.js';
 import { assert, makeAssert } from './error/assert.js';
 import { getAnonymousIntrinsics } from './get-anonymous-intrinsics.js';
-import { makeCompartmentConstructor } from './compartment-shim.js';
+import { makeCompartmentConstructor } from './compartment.js';
 import { tameHarden } from './tame-harden.js';
 import { tameSymbolConstructor } from './tame-symbol-constructor.js';
 
@@ -58,7 +58,10 @@ import { tameSymbolConstructor } from './tame-symbol-constructor.js';
 const { Fail, details: d, quote: q } = assert;
 
 /** @type {Error=} */
-let priorLockdown;
+let priorRepairIntrinsics;
+
+/** @type {Error=} */
+let priorHardenIntrinsics;
 
 // Build a harden() with an empty fringe.
 // Gate it on lockdown.
@@ -124,7 +127,6 @@ const assertDirectEvalAvailable = () => {
 
 /**
  * @param {LockdownOptions} [options]
- * @returns {() => void} repairIntrinsics
  */
 export const repairIntrinsics = (options = {}) => {
   // First time, absent options default to 'safe'.
@@ -190,17 +192,17 @@ export const repairIntrinsics = (options = {}) => {
   extraOptionsNames.length === 0 ||
     Fail`lockdown(): non supported option ${q(extraOptionsNames)}`;
 
-  priorLockdown === undefined ||
+  priorRepairIntrinsics === undefined ||
     // eslint-disable-next-line @endo/no-polymorphic-call
     assert.fail(
-      d`Already locked down at ${priorLockdown} (SES_ALREADY_LOCKED_DOWN)`,
+      d`Already locked down at ${priorRepairIntrinsics} (SES_ALREADY_LOCKED_DOWN)`,
       TypeError,
     );
   // See https://github.com/endojs/endo/blob/master/packages/ses/error-codes/SES_ALREADY_LOCKED_DOWN.md
-  priorLockdown = TypeError('Prior lockdown (SES_ALREADY_LOCKED_DOWN)');
+  priorRepairIntrinsics = TypeError('Prior lockdown (SES_ALREADY_LOCKED_DOWN)');
   // Tease V8 to generate the stack string and release the closures the stack
   // trace retained:
-  priorLockdown.stack;
+  priorRepairIntrinsics.stack;
 
   assertDirectEvalAvailable();
 
@@ -358,6 +360,20 @@ export const repairIntrinsics = (options = {}) => {
    */
 
   function hardenIntrinsics() {
+    priorHardenIntrinsics === undefined ||
+      // eslint-disable-next-line @endo/no-polymorphic-call
+      assert.fail(
+        d`Already locked down at ${priorHardenIntrinsics} (SES_ALREADY_LOCKED_DOWN)`,
+        TypeError,
+      );
+    // See https://github.com/endojs/endo/blob/master/packages/ses/error-codes/SES_ALREADY_LOCKED_DOWN.md
+    priorHardenIntrinsics = TypeError(
+      'Prior lockdown (SES_ALREADY_LOCKED_DOWN)',
+    );
+    // Tease V8 to generate the stack string and release the closures the stack
+    // trace retained:
+    priorHardenIntrinsics.stack;
+
     // Circumvent the override mistake.
     // TODO consider moving this to the end of the repair phase, and
     // therefore before vetted shims rather than afterwards. It is not
@@ -365,12 +381,14 @@ export const repairIntrinsics = (options = {}) => {
     // @ts-ignore enablePropertyOverrides does its own input validation
     enablePropertyOverrides(intrinsics, overrideTaming, overrideDebug);
 
+    // TODO replace global Compartment constructor!?
+
     // Finally register and optionally freeze all the intrinsics. This
     // must be the operation that modifies the intrinsics.
     tamedHarden(intrinsics);
 
-    // Reveal harden after lockdown.
-    // Harden is dangerous before lockdown because hardening just
+    // Reveal harden after hardenIntrinsics.
+    // Harden is dangerous before hardenIntrinsics because hardening just
     // about anything will inadvertently render intrinsics irreparable.
     // Also, for modules that must work both before or after lockdown (code
     // that is portable between JS and SES), the existence of harden in global
@@ -383,13 +401,17 @@ export const repairIntrinsics = (options = {}) => {
     return true;
   }
 
-  return hardenIntrinsics;
+  globalThis.hardenIntrinsics = hardenIntrinsics;
 };
+
+globalThis.repairIntrinsics = repairIntrinsics;
 
 /**
  * @param {LockdownOptions} [options]
  */
 export const lockdown = (options = {}) => {
-  const hardenIntrinsics = repairIntrinsics(options);
+  repairIntrinsics(options);
   hardenIntrinsics();
 };
+
+globalThis.lockdown = lockdown;

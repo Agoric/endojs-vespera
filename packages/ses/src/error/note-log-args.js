@@ -231,7 +231,7 @@ export const makeNoteLogArgsArrayKit = (
   }
 
   /**
-   * @type {WeakMap<Error, LogArgs[]>}
+   * @type {WeakMap<Error, import('./internal-types.js').LogArgs[]>}
    *
    * Maps from an error to an array of log args, where each log args is
    * remembered as an annotation on that error. This can be used, for example,
@@ -244,7 +244,7 @@ export const makeNoteLogArgsArrayKit = (
 
   /**
    * @param {Error} error
-   * @param {LogArgs} logArgs
+   * @param {import('./internal-types.js').LogArgs} logArgs
    */
   const addLogArgs = (error, logArgs) => {
     const logArgsArray = noteLogArgsArrayMap.get(error);
@@ -261,7 +261,7 @@ export const makeNoteLogArgsArrayKit = (
 
   /**
    * @param {Error} error
-   * @returns {LogArgs[] | undefined}
+   * @returns {import('./internal-types.js').LogArgs[] | undefined}
    */
   const takeLogArgsArray = error => {
     const result = noteLogArgsArrayMap.get(error);

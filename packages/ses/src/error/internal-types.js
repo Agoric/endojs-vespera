@@ -1,5 +1,7 @@
 // @ts-check
 
+export {};
+
 /**
  * @typedef {readonly any[]} LogArgs
  *
@@ -46,7 +48,7 @@
 
 /**
  * @typedef {object} LoggingConsoleKit
- * @property {VirtualConsole} loggingConsole
+ * @property {import('./types.js').VirtualConsole} loggingConsole
  * @property {() => readonly LogRecord[]} takeLog
  */
 

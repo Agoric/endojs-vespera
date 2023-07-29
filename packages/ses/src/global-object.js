@@ -10,7 +10,9 @@ import {
 } from './commons.js';
 import { makeEvalFunction } from './make-eval-function.js';
 import { makeFunctionConstructor } from './make-function-constructor.js';
+import { makeCompartmentConstructor } from './compartment.js';
 import { constantProperties, universalPropertyNames } from './permits.js';
+import { getGlobalIntrinsics } from './intrinsics.js';
 
 /**
  * The host's ordinary global object is not provided by a `with` block, so
@@ -69,20 +71,15 @@ export const setGlobalObjectConstantProperties = globalObject => {
  * `sharedGlobalPropertyNames`.
  *
  * @param {object} globalObject
- * @param {object} param1
- * @param {object} param1.intrinsics
- * @param {object} param1.newGlobalPropertyNames
- * @param {Function} param1.makeCompartmentConstructor
- * @param {(object) => void} param1.markVirtualizedNativeFunction
+ * @param {object} args
+ * @param {Record<string, unknown>} args.intrinsics
+ * @param {Function} args.makeCompartmentConstructor
+ * @param {Record<string, string>} args.newGlobalPropertyNames
+ * @param {(object) => void} args.markVirtualizedNativeFunction
  */
 export const setGlobalObjectMutableProperties = (
   globalObject,
-  {
-    intrinsics,
-    newGlobalPropertyNames,
-    makeCompartmentConstructor,
-    markVirtualizedNativeFunction,
-  },
+  { intrinsics, newGlobalPropertyNames, makeCompartmentConstructor, markVirtualizedNativeFunction },
 ) => {
   for (const [name, intrinsicName] of entries(universalPropertyNames)) {
     if (objectHasOwnProperty(intrinsics, intrinsicName)) {
@@ -164,4 +161,5 @@ export const setGlobalObjectEvaluators = (
       configurable: true,
     });
   }
+  // TODO why is Compartment absent?
 };

@@ -1,5 +1,7 @@
 // @ts-check
 
+export {};
+
 /**
  * @callback BaseAssert
  * The `assert` function itself.

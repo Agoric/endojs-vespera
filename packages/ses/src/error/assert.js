@@ -44,10 +44,10 @@ import { makeNoteLogArgsArrayKit } from './note-log-args.js';
 
 // /////////////////////////////////////////////////////////////////////////////
 
-/** @type {WeakMap<StringablePayload, any>} */
+/** @type {WeakMap<import('./types.js').StringablePayload, any>} */
 const declassifiers = new WeakMap();
 
-/** @type {AssertQuote} */
+/** @type {import('./types.js').AssertQuote} */
 const quote = (payload, spaces = undefined) => {
   const result = freeze({
     toString: freeze(() => bestEffortStringify(payload, spaces)),
@@ -72,7 +72,7 @@ const canBeBare = freeze(/^[\w:-]( ?[\w:-])*$/);
  * by inline replacement similar to that of `bestEffortStringify` for producing
  * rendered messages like `(an object) was tagged "[Unsafe bare string]"`).
  *
- * @type {AssertQuote}
+ * @type {import('./types.js').AssertQuote}
  */
 const bare = (payload, spaces = undefined) => {
   if (typeof payload !== 'string' || !regexpTest(canBeBare, payload)) {
@@ -98,7 +98,7 @@ freeze(bare);
  */
 
 /**
- * @type {WeakMap<DetailsToken, HiddenDetails>}
+ * @type {WeakMap<import('./types.js').DetailsToken, HiddenDetails>}
  *
  * Maps from a details token which a `details` template literal returned
  * to a record of the contents of that template literal expression.
@@ -158,7 +158,7 @@ freeze(DetailsTokenProto.toString);
  * of them should be uses where the template literal has no redacted
  * substitution values. In those cases, the two are equivalent.
  *
- * @type {DetailsTag}
+ * @type {import('./types.js').DetailsTag}
  */
 const redactedDetails = (template, ...args) => {
   // Keep in mind that the vast majority of calls to `details` creates
@@ -182,7 +182,7 @@ freeze(redactedDetails);
  * of safety. `unredactedDetails` also sacrifices the speed of `details`,
  * which is usually fine in debugging and testing.
  *
- * @type {DetailsTag}
+ * @type {import('./types.js').DetailsTag}
  */
 const unredactedDetails = (template, ...args) => {
   args = arrayMap(args, arg =>
@@ -195,7 +195,7 @@ export { unredactedDetails };
 
 /**
  * @param {HiddenDetails} hiddenDetails
- * @returns {LogArgs}
+ * @returns {import('./internal-types.js').LogArgs}
  */
 const getLogArgs = ({ template, args }) => {
   const logArgs = [template[0]];
@@ -220,7 +220,7 @@ const getLogArgs = ({ template, args }) => {
 };
 
 /**
- * @type {WeakMap<Error, LogArgs>}
+ * @type {WeakMap<Error, import('./internal-types.js').LogArgs>}
  *
  * Maps from an error object to the log args that are a more informative
  * alternative message for that error. When logging the error, these
@@ -238,7 +238,7 @@ const errorTags = new WeakMap();
 
 /**
  * @param {Error} err
- * @param {string=} optErrorName
+ * @param {string} [optErrorName]
  * @returns {string}
  */
 const tagError = (err, optErrorName = err.name) => {
@@ -253,7 +253,7 @@ const tagError = (err, optErrorName = err.name) => {
 };
 
 /**
- * @type {AssertMakeError}
+ * @type {import('./types.js').AssertMakeError}
  */
 const makeError = (
   optDetails = redactedDetails`Assert failed`,
@@ -285,7 +285,7 @@ freeze(makeError);
 const { addLogArgs, takeLogArgsArray } = makeNoteLogArgsArrayKit();
 
 /**
- * @type {WeakMap<Error, NoteCallback[]>}
+ * @type {WeakMap<Error, import('./internal-types.js').NoteCallback[]>}
  *
  * An augmented console will normally only take the hidden noteArgs array once,
  * when it logs the error being annotated. Once that happens, further
@@ -298,7 +298,7 @@ const { addLogArgs, takeLogArgsArray } = makeNoteLogArgsArrayKit();
  */
 const hiddenNoteCallbackArrays = new WeakMap();
 
-/** @type {AssertNote} */
+/** @type {import('./types.js').AssertNote} */
 const note = (error, detailsNote) => {
   if (typeof detailsNote === 'string') {
     // If it is a string, use it as the literal part of the template so
@@ -341,7 +341,7 @@ const defaultGetStackString = error => {
   return stringSlice(stackString, pos + 1); // exclude the initial newline
 };
 
-/** @type {LoggedErrorHandler} */
+/** @type {import('./internal-types.js').LoggedErrorHandler} */
 const loggedErrorHandler = {
   getStackString: globalThis.getStackString || defaultGetStackString,
   tagError: error => tagError(error),
@@ -373,13 +373,13 @@ export { loggedErrorHandler };
 // /////////////////////////////////////////////////////////////////////////////
 
 /**
- * @type {MakeAssert}
+ * @type {import('./types.js').MakeAssert}
  */
 const makeAssert = (optRaise = undefined, unredacted = false) => {
   const details = unredacted ? unredactedDetails : redactedDetails;
   const assertFailedDetails = details`Check failed`;
 
-  /** @type {AssertFail} */
+  /** @type {import('./types.js').AssertFail} */
   const fail = (
     optDetails = assertFailedDetails,
     ErrorConstructor = globalThis.Error,
@@ -392,13 +392,13 @@ const makeAssert = (optRaise = undefined, unredacted = false) => {
   };
   freeze(fail);
 
-  /** @type {FailTag} */
+  /** @type {import('./types.js').FailTag} */
   const Fail = (template, ...args) => fail(details(template, ...args));
 
   // Don't freeze or export `baseAssert` until we add methods.
   // TODO If I change this from a `function` function to an arrow
   // function, I seem to get type errors from TypeScript. Why?
-  /** @type {BaseAssert} */
+  /** @type {import('./types.js').BaseAssert} */
   function baseAssert(
     flag,
     optDetails = undefined,
@@ -407,7 +407,7 @@ const makeAssert = (optRaise = undefined, unredacted = false) => {
     flag || fail(optDetails, ErrorConstructor);
   }
 
-  /** @type {AssertEqual} */
+  /** @type {import('./types.js').AssertEqual} */
   const equal = (
     actual,
     expected,
@@ -422,7 +422,7 @@ const makeAssert = (optRaise = undefined, unredacted = false) => {
   };
   freeze(equal);
 
-  /** @type {AssertTypeof} */
+  /** @type {import('./types.js').AssertTypeof} */
   const assertTypeof = (specimen, typename, optDetails) => {
     // This will safely fall through if typename is not a string,
     // which is what we want.
@@ -441,12 +441,12 @@ const makeAssert = (optRaise = undefined, unredacted = false) => {
   };
   freeze(assertTypeof);
 
-  /** @type {AssertString} */
+  /** @type {import('./types.js').AssertString} */
   const assertString = (specimen, optDetails = undefined) =>
     assertTypeof(specimen, 'string', optDetails);
 
   // Note that "assert === baseAssert"
-  /** @type {Assert} */
+  /** @type {import('./types.js').Assert} */
   const assert = assign(baseAssert, {
     error: makeError,
     fail,
@@ -465,6 +465,6 @@ const makeAssert = (optRaise = undefined, unredacted = false) => {
 freeze(makeAssert);
 export { makeAssert };
 
-/** @type {Assert} */
+/** @type {import('./types.js').Assert} */
 const assert = makeAssert();
 export { assert };
