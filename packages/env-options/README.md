@@ -34,24 +34,28 @@ optionally holding a property with the same name as the option,
 whose value is the configuration setting of that option.
 
 ```js
-import { makeEnvironmentCaptor } from '@endo/env-options';
-const { getEnvironmentOption } = makeEnvironmentCaptor(globalThis);
+import { getEnvironmentOption } from '@endo/env-options';
 const FooBarOption = getEnvironmentOption('FOO_BAR', 'absent');
 ```
 
 The first argument to `getEnvironmentOption` is the name of the option.
 The value of `FooBarOption` would then be the value of
 `globalThis.process.env.FOO_BAR`, if present.
-If setting is either absent or `undefined`, the default `'absent'`
-would be used instead.
+If value is either absent or `undefined`, the second argument,
+such as `'absent'`, would be used instead.
 
 In either case, reflecting Unix environment variable expectations,
 the resulting setting must be a string.
 This restriction also helps ensure that this channel is used only to pass data,
 not authority beyond the ability to read this global state.
 
-The `makeEnvironmentCaptor` function also returns a
-`getCapturedEnvironmentOptionNames` function for use to give feedback about
+The `'@endo/env-options'` module also exports a lower-level
+`makeEnvironmentCaptor` that you can apply to whatever object you wish to treat
+as a global, such as the global of another compartment. It returns an entagled
+pair of a `getEnvironmentOption` function as above, and a
+`getCapturedEnvironmentOptionNames` function for that returns an array of
+the option names used by that `getEnvironmentOption` function. This is
+useful to give feedback about
 which environment variables were actually read, for diagnostic purposes.
 For example, the
 ses-shim `lockdown` once contained code such as the following, to explain which
