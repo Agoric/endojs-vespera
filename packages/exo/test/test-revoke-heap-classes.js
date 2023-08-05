@@ -36,7 +36,7 @@ test('test revoke defineExoClass', t => {
       },
     },
     {
-      getRevoker(r) {
+      receiveRevoker(r) {
         revoke = r;
       },
     },
@@ -74,7 +74,7 @@ test('test revoke defineExoClassKit', t => {
       },
     },
     {
-      getRevoker(r) {
+      receiveRevoker(r) {
         revoke = r;
       },
     },
@@ -83,10 +83,12 @@ test('test revoke defineExoClassKit', t => {
   t.is(upCounter.incr(5), 8);
   t.is(downCounter.decr(), 7);
   t.is(revoke(upCounter), true);
+  t.is(revoke(upCounter), false);
   t.throws(() => upCounter.incr(3), {
     message:
       '"In \\"incr\\" method of (Counter up)" may only be applied to a valid instance: "[Alleged: Counter up]"',
   });
+  t.is(revoke(downCounter), true);
   t.is(revoke(downCounter), false);
   t.throws(() => downCounter.decr(), {
     message:

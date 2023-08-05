@@ -5,8 +5,7 @@ import { objectMap } from '@endo/patterns';
 
 import { defendPrototype, defendPrototypeKit } from './exo-tools.js';
 
-const { Fail, quote: q } = assert;
-const { create, seal, freeze, defineProperty, entries, values } = Object;
+const { create, seal, freeze, defineProperty, values } = Object;
 
 const { getEnvironmentOption } = makeEnvironmentCaptor(globalThis);
 const DEBUG = getEnvironmentOption('DEBUG', '');
@@ -70,7 +69,7 @@ export const initEmpty = () => emptyRecord;
  */
 
 /**
- * @callback GetRevoker
+ * @callback ReceiveRevoker
  * @param {Revoker} revoke
  * @returns {void}
  */
@@ -80,7 +79,7 @@ export const initEmpty = () => emptyRecord;
  * @typedef {object} FarClassOptions
  * @property {(context: C) => void} [finish]
  * @property {StateShape} [stateShape]
- * @property {GetRevoker} [getRevoker]
+ * @property {ReceiveRevoker} [receiveRevoker]
  */
 
 /**
@@ -101,7 +100,7 @@ export const defineExoClass = (
   options = {},
 ) => {
   harden(methods);
-  const { finish = undefined, getRevoker = undefined } = options;
+  const { finish = undefined, receiveRevoker = undefined } = options;
   /** @type {WeakMap<M,ClassContext<ReturnType<I>, M>>} */
   const contextMap = new WeakMap();
   const proto = defendPrototype(
@@ -134,10 +133,10 @@ export const defineExoClass = (
     );
   };
 
-  if (getRevoker) {
+  if (receiveRevoker) {
     const revoke = self => contextMap.delete(self);
     harden(revoke);
-    getRevoker(revoke);
+    receiveRevoker(revoke);
   }
 
   return harden(makeInstance);
@@ -162,7 +161,7 @@ export const defineExoClassKit = (
   options = {},
 ) => {
   harden(methodsKit);
-  const { finish = undefined, getRevoker = undefined } = options;
+  const { finish = undefined, receiveRevoker = undefined } = options;
   const contextMapKit = objectMap(methodsKit, () => new WeakMap());
   const getContextKit = objectMap(
     contextMapKit,
@@ -200,31 +199,11 @@ export const defineExoClassKit = (
     return context.facets;
   };
 
-  if (getRevoker) {
-    const revoke = aFacet => {
-      let seenTrue = false;
-      let facets;
-      for (const contextMap of values(contextMapKit)) {
-        if (contextMap.has(aFacet)) {
-          seenTrue = true;
-          facets = contextMap.get(aFacet).facets;
-          break;
-        }
-      }
-      if (!seenTrue) {
-        return false;
-      }
-      // eslint-disable-next-line no-use-before-define
-      for (const [facetName, facet] of entries(facets)) {
-        const seen = contextMapKit[facetName].delete(facet);
-        if (seen === false) {
-          Fail`internal: inconsistent facet revocation ${q(facetName)}`;
-        }
-      }
-      return seenTrue;
-    };
+  if (receiveRevoker) {
+    const revoke = aFacet =>
+      values(contextMapKit).some(contextMap => contextMap.delete(aFacet));
     harden(revoke);
-    getRevoker(revoke);
+    receiveRevoker(revoke);
   }
 
   return harden(makeInstanceKit);
