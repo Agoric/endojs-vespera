@@ -351,7 +351,7 @@ test('smallcaps encoding examples', t => {
   harden(nonPassableErr);
   t.throws(() => passStyleOf(nonPassableErr), {
     message:
-      /Passed Error has extra unpassed properties {"extraProperty":{"configurable":.*,"enumerable":true,"value":"something bad","writable":.*}}/,
+      'Passed Error has extra unpassed properties {"extraProperty":{"configurable":false,"enumerable":true,"value":"something bad","writable":false}}',
   });
   assertSer(
     nonPassableErr,
