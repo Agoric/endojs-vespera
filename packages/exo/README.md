@@ -17,6 +17,6 @@ import { GET_INTERFACE_GUARD } from `@endo/exo`;
    // `methodNames` omits names of automatically added meta-methods like
    // the value of `GET_INTERFACE_GUARD`.
    // Others may also be omitted if `interfaceGuard.partial`
-   const methodNames = Reflect.ownKeys(interfaceGuard.methodGuards);
+   const methodNames = Reflect.ownKeys(interfaceGuard.payload.methodGuards);
 ...
 ```

@@ -52,7 +52,7 @@ test('test defineExoClass', t => {
       'In "incr" method of (UpCounter): arg 0?: string "foo" - Must be a number',
   });
   t.deepEqual(upCounter[GET_INTERFACE_GUARD](), UpCounterI);
-  t.deepEqual(ownKeys(UpCounterI.methodGuards), ['incr']);
+  t.deepEqual(ownKeys(UpCounterI.payload.methodGuards), ['incr']);
 });
 
 test('test defineExoClassKit', t => {

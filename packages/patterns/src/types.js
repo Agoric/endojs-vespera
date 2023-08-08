@@ -511,15 +511,14 @@ export {};
 
 /**
  * @template {Record<string | symbol, MethodGuard>} [T=Record<string | symbol, MethodGuard>]
- * @typedef {{
- *   klass: 'Interface',
- *   interfaceName: string,
- *   methodGuards: T
- *   sloppy?: boolean
+ * @typedef {CopyTagged & {
+ *   [Symbol.toStringTag]: 'guard:interfaceGuard',
+ *   payload: {
+ *     interfaceName: string,
+ *     methodGuards: T
+ *     sloppy?: boolean
+ *   }
  * }} InterfaceGuard
- *
- * TODO https://github.com/endojs/endo/pull/1712 to make it into a genuine
- * guard that is distinct from a copyRecord
  */
 
 /**
@@ -574,37 +573,25 @@ export {};
  */
 
 /**
- * @typedef {{
- *   klass: 'methodGuard',
- *   callKind: 'sync' | 'async',
- *   argGuards: ArgGuard[]
- *   optionalArgGuards?: ArgGuard[]
- *   restArgGuard?: Pattern
- *   returnGuard: Pattern
+ * @typedef {CopyTagged & {
+ *   [Symbol.toStringTag]: 'guard:methodGuard',
+ *   payload: {
+ *     callKind: 'sync' | 'async',
+ *     argGuards: ArgGuard[]
+ *     optionalArgGuards?: ArgGuard[]
+ *     restArgGuard?: Pattern
+ *     returnGuard?: Pattern
+ *   }
  * }} MethodGuard
- *
- * TODO https://github.com/endojs/endo/pull/1712 to make it into a genuine
- * guard that is distinct from a copyRecord.
- * Once we're ready for such a compat break, we might also take the
- * opportunity to rename `restArgGuard` and `returnGuard`
- * to reflect that their value must be a Pattern rather that a
- * non-pattern guard.
  */
 
 /**
- * @typedef {{
- *   klass: 'awaitArg',
- *   argGuard: Pattern
+ * @typedef {CopyTagged & {
+ *   [Symbol.toStringTag]: 'guard:awaitArgGuard'
+ *   payload: {
+ *     argGuard: Pattern
+ *   }
  * }} AwaitArgGuard
- *
- * TODO https://github.com/endojs/endo/pull/1712 to make it into a genuine
- * guard that is distinct from a copyRecord.
- * Unlike InterfaceGuard or MethodGuard, for AwaitArgGuard it is a correctness
- * issue, so that the guard not be mistaken for the copyRecord as key/pattern.
- * Once we're ready for such a compat break, we might also take the
- * opportunity to rename `argGuard`
- * to reflect that its value must be a Pattern rather that a
- * non-pattern guard.
  */
 
 /** @typedef {AwaitArgGuard | Pattern} ArgGuard */

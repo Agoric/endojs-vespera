@@ -159,6 +159,18 @@ const makePatternKit = () => {
     HelpersByMatchTag[tag];
 
   /**
+   * Note that this function indicates absence by returning `undefined`,
+   * even though `undefined` is a valid pattern. To evade this confusion,
+   * to register a payload shape with that meaning, use `MM.undefined()`.
+   *
+   * @param {string} tag
+   * @returns {Pattern | undefined}
+   */
+  const maybePayloadShape = tag =>
+    // eslint-disable-next-line no-use-before-define
+    GuardPayloadShapes[tag];
+
+  /**
    * @typedef {Exclude<PassStyle, 'tagged'> |
    *   'copySet' | 'copyBag' | 'copyMap' | keyof HelpersByMatchTag
    * } Kind
@@ -197,6 +209,12 @@ const makePatternKit = () => {
       // Buried here is the important case, where we process
       // the various patternNodes
       return matchHelper.checkIsWellFormed(tagged.payload, check);
+    } else {
+      const payloadShape = maybePayloadShape(tag);
+      if (payloadShape !== undefined) {
+        // eslint-disable-next-line no-use-before-define
+        return checkMatches(tagged.payload, payloadShape, check, tag);
+      }
     }
     switch (tag) {
       case 'copySet': {
@@ -1702,10 +1720,11 @@ MM = M;
 
 // //////////////////////////// Guards ///////////////////////////////////////
 
-const AwaitArgGuardShape = harden({
-  klass: 'awaitArg',
+const AwaitArgGuardPayloadShape = harden({
   argGuard: M.pattern(),
 });
+
+const AwaitArgGuardShape = M.kind('guard:awaitArgGuard');
 
 export const isAwaitArgGuard = specimen =>
   matches(specimen, AwaitArgGuardShape);
@@ -1722,8 +1741,7 @@ harden(assertAwaitArgGuard);
  */
 const makeAwaitArgGuard = argGuard => {
   /** @type {AwaitArgGuard} */
-  const result = harden({
-    klass: 'awaitArg',
+  const result = makeTagged('guard:awaitArgGuard', {
     argGuard,
   });
   assertAwaitArgGuard(result);
@@ -1735,8 +1753,7 @@ const PatternListShape = M.arrayOf(M.pattern());
 const ArgGuardShape = M.or(M.pattern(), AwaitArgGuardShape);
 const ArgGuardListShape = M.arrayOf(ArgGuardShape);
 
-const SyncMethodGuardShape = harden({
-  klass: 'methodGuard',
+const SyncMethodGuardPayloadShape = harden({
   callKind: 'sync',
   argGuards: PatternListShape,
   optionalArgGuards: M.opt(PatternListShape),
@@ -1744,8 +1761,7 @@ const SyncMethodGuardShape = harden({
   returnGuard: M.pattern(),
 });
 
-const AsyncMethodGuardShape = harden({
-  klass: 'methodGuard',
+const AsyncMethodGuardPayloadShape = harden({
   callKind: 'async',
   argGuards: ArgGuardListShape,
   optionalArgGuards: M.opt(ArgGuardListShape),
@@ -1753,7 +1769,12 @@ const AsyncMethodGuardShape = harden({
   returnGuard: M.pattern(),
 });
 
-const MethodGuardShape = M.or(SyncMethodGuardShape, AsyncMethodGuardShape);
+const MethodGuardPayloadShape = M.or(
+  SyncMethodGuardPayloadShape,
+  AsyncMethodGuardPayloadShape,
+);
+
+const MethodGuardShape = M.kind('guard:methodGuard');
 
 export const assertMethodGuard = specimen => {
   mustMatch(specimen, MethodGuardShape, 'methodGuard');
@@ -1792,8 +1813,7 @@ const makeMethodGuardMaker = (
     },
     returns: (returnGuard = M.undefined()) => {
       /** @type {MethodGuard} */
-      const result = harden({
-        klass: 'methodGuard',
+      const result = makeTagged('guard:methodGuard', {
         callKind,
         argGuards,
         optionalArgGuards,
@@ -1805,12 +1825,13 @@ const makeMethodGuardMaker = (
     },
   });
 
-const InterfaceGuardShape = harden({
-  klass: 'Interface',
+const InterfaceGuardPayloadShape = harden({
   interfaceName: M.string(),
   methodGuards: M.recordOf(M.string(), MethodGuardShape),
   sloppy: M.boolean(),
 });
+
+const InterfaceGuardShape = M.kind('guard:interfaceGuard');
 
 export const assertInterfaceGuard = specimen => {
   mustMatch(specimen, InterfaceGuardShape, 'interfaceGuard');
@@ -1826,8 +1847,7 @@ harden(assertInterfaceGuard);
 const makeInterfaceGuard = (interfaceName, methodGuards, options = {}) => {
   const { sloppy = false } = options;
   /** @type {InterfaceGuard} */
-  const result = harden({
-    klass: 'Interface',
+  const result = makeTagged('guard:interfaceGuard', {
     interfaceName,
     methodGuards,
     sloppy,
@@ -1835,3 +1855,9 @@ const makeInterfaceGuard = (interfaceName, methodGuards, options = {}) => {
   assertInterfaceGuard(result);
   return result;
 };
+
+const GuardPayloadShapes = harden({
+  'guard:awaitArgGuard': AwaitArgGuardPayloadShape,
+  'guard:methodGuard': MethodGuardPayloadShape,
+  'guard:interfaceGuard': InterfaceGuardPayloadShape,
+});
