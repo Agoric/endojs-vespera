@@ -16,7 +16,24 @@ export default function tameMathObject(mathTaming = 'safe') {
   const { random: _, ...otherDescriptors } =
     getOwnPropertyDescriptors(originalMath);
 
-  const sharedMath = create(objectPrototype, otherDescriptors);
+  const sharedMath = create(objectPrototype, {
+    ...otherDescriptors,
+    random: {
+      value: {
+        /**
+         * `%SharedMath%.random()` throws a TypeError starting with "secure mode".
+         * See https://github.com/endojs/endo/issues/910#issuecomment-1581855420
+         */
+        random() {
+          throw TypeError('secure mode %SharedMath%.random() throws');
+        },
+      }.random,
+      // remains writable and configurable until the hardenIntrinsics phase.
+      writable: true,
+      enumerable: false,
+      configurable: true,
+    },
+  });
 
   return {
     '%InitialMath%': initialMath,
