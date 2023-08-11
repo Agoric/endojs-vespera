@@ -48,7 +48,6 @@ import { makeNodeReader } from '@endo/stream-node';
 import { E } from '@endo/far';
 
 import { provideEndoClient } from './client.js';
-import { randomHex16 } from './random.js';
 
 const readPowers = makeReadPowers({ fs, url, crypto });
 const writePowers = makeWritePowers({ fs, url });
@@ -921,91 +920,14 @@ export const main = async rawArgs => {
       'Reuse an existing worker rather than create a new one',
     )
     .action(async (filePath, cmd) => {
-      const {
-        UNSAFE: importPath,
-        name: resultName,
-        worker: workerName = 'NEW',
-        as: partyNames,
-        powers: powersName = 'NONE',
-      } = cmd.opts();
-      let { bundle: bundleName } = cmd.opts();
-
-      if (filePath !== undefined && importPath !== undefined) {
-        console.error('Specify only one of [file] or --UNSAFE <file>');
-        process.exitCode = 1;
-        return;
-      }
-      if (
-        filePath === undefined &&
-        importPath === undefined &&
-        bundleName === undefined
-      ) {
-        console.error(
-          'Specify at least one of [file], --bundle <file>, or --UNSAFE <file>',
-        );
-        process.exitCode = 1;
-        return;
-      }
-
-      /** @type {import('@endo/eventual-send').ERef<import('@endo/stream').Reader<string>> | undefined} */
-      let bundleReaderRef;
-      /** @type {string | undefined} */
-      let temporaryBundleName;
-      if (filePath !== undefined) {
-        if (bundleName === undefined) {
-          // TODO alternately, make a temporary session-scoped GC pet store
-          // overshadowing the permanent one, which gets implicitly dropped
-          // when this CLI CapTP session ends.
-          temporaryBundleName = `tmp-bundle-${await randomHex16()}`;
-          bundleName = temporaryBundleName;
-        }
-        const bundle = await bundleSource(filePath);
-        const bundleText = JSON.stringify(bundle);
-        const bundleBytes = textEncoder.encode(bundleText);
-        bundleReaderRef = makeReaderRef([bundleBytes]);
-      }
-
-      const { getBootstrap } = await provideEndoClient(
-        'cli',
-        sockPath,
+      const { make } = await import('./make.js');
+      return make({
+        cancel,
         cancelled,
-      );
-      try {
-        const bootstrap = getBootstrap();
-        let party = E(bootstrap).host();
-        for (const partyName of partyNames) {
-          party = E(party).provide(partyName);
-        }
-
-        // Prepare a bundle, with the given name.
-        if (bundleReaderRef !== undefined) {
-          await E(party).store(bundleReaderRef, bundleName);
-        }
-
-        const resultP =
-          importPath !== undefined
-            ? E(party).importUnsafeAndEndow(
-                workerName,
-                path.resolve(importPath),
-                powersName,
-                resultName,
-              )
-            : E(party).importBundleAndEndow(
-                workerName,
-                bundleName,
-                powersName,
-                resultName,
-              );
-        const result = await resultP;
-        console.log(result);
-
-        if (temporaryBundleName) {
-          await E(party).remove(temporaryBundleName);
-        }
-      } catch (error) {
-        console.error(error);
-        cancel(error);
-      }
+        sockPath,
+        filePath,
+        ...cmd.opts(),
+      });
     });
 
   program
