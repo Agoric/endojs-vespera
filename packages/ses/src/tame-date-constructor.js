@@ -85,13 +85,13 @@ export default function tameDateConstructor(dateTaming = 'safe') {
         configurable: false,
       },
       parse: {
-        value: Date.parse,
+        value: OriginalDate.parse,
         writable: true,
         enumerable: false,
         configurable: true,
       },
       UTC: {
-        value: Date.UTC,
+        value: OriginalDate.UTC,
         writable: true,
         enumerable: false,
         configurable: true,
@@ -104,7 +104,7 @@ export default function tameDateConstructor(dateTaming = 'safe') {
 
   defineProperties(InitialDate, {
     now: {
-      value: Date.now,
+      value: OriginalDate.now,
       writable: true,
       enumerable: false,
       configurable: true,
