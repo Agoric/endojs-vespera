@@ -3,7 +3,14 @@ import tameErrorConstructor from '../../src/error/tame-error-constructor.js';
 
 const { '%InitialError%': InitialError } = tameErrorConstructor();
 
-test('tameErrorConstructor', t => {
+/*
+ * Because of
+ * https://github.com/tc39/proposal-error-stacks/issues/26#issuecomment-1675512619
+ * in tame-v8-error-constructor, we have commented
+ * out the feature being tested here. Should we later restore the feature,
+ * we should also unskip this test.
+ */
+test.skip('tameErrorConstructor', t => {
   try {
     t.is(typeof InitialError.stackTraceLimit, 'number');
     InitialError.stackTraceLimit = 11;
