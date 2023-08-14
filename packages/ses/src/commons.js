@@ -1,7 +1,8 @@
 /* global globalThis */
 /* eslint-disable no-restricted-globals */
 
-import './error/tame-v8-stack-descriptor.js'
+// Must run before the rest of commons.js
+import './error/tame-v8-stack-descriptor.js';
 
 /**
  * commons.js

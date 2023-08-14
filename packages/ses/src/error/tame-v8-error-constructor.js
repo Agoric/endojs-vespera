@@ -279,7 +279,7 @@ export const tameV8ErrorConstructor = (
           enumerable: false,
           configurable: false,
         },
-      })
+      });
       return result;
     },
   };
