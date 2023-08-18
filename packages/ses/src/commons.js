@@ -1,6 +1,9 @@
 /* global globalThis */
 /* eslint-disable no-restricted-globals */
 
+// Must run before the rest of commons.js
+import './error/tame-v8-stack-descriptor.js';
+
 /**
  * commons.js
  * Declare shorthand functions. Sharing these declarations across modules

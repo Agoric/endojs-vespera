@@ -1,22 +1,26 @@
 import {
   WeakMap,
-  WeakSet,
+  // WeakSet, To support commented out feature at end
   apply,
   arrayFilter,
   arrayJoin,
   arrayMap,
   arraySlice,
-  create,
+  // create, To support commented out feature at end
   defineProperties,
-  fromEntries,
+  // fromEntries, To support commented out feature at end
   reflectSet,
   regexpExec,
   regexpTest,
   weakmapGet,
   weakmapSet,
-  weaksetAdd,
-  weaksetHas,
+  // weaksetAdd, To support commented out feature at end
+  // weaksetHas, To support commented out feature at end
 } from '../commons.js';
+
+/*
+ * The following code is commented out because it is only needed to support
+ * the commented out features at the end.
 
 // Whitelist names from https://v8.dev/docs/stack-trace-api
 // Whitelisting only the names used by error-stack-shim/src/v8StackFrames
@@ -59,6 +63,7 @@ const safeV8CallSiteFacet = callSite => {
 };
 
 const safeV8SST = sst => arrayMap(sst, safeV8CallSiteFacet);
+ */
 
 // If it has `/node_modules/` anywhere in it, on Node it is likely
 // to be a dependent package of the current package, and so to
@@ -257,16 +262,46 @@ export const tameV8ErrorConstructor = (
       return stackString;
     },
     prepareStackTrace(error, sst) {
+      let result = '';
       if (errorTaming === 'unsafe') {
         const stackString = stackStringFromSST(error, sst);
         weakmapSet(stackInfos, error, { stackString });
-        return `${error}${stackString}`;
+        result = `${error}${stackString}`;
       } else {
         weakmapSet(stackInfos, error, { callSites: sst });
-        return '';
       }
+      // "reduntantly" defineProperties to stay safe after
+      // https://github.com/tc39/proposal-error-stacks/issues/26#issuecomment-1675512619
+      defineProperties(error, {
+        stack: {
+          value: result,
+          writable: false,
+          enumerable: false,
+          configurable: false,
+        },
+      });
+      return result;
     },
   };
+
+  // This simple setting instead of the old commented out code below it.
+  OriginalError.prepareStackTrace = tamedMethods.prepareStackTrace;
+
+  /* The following code is commented out until we are confident we
+   * can still provide this enhanced but very-nonstandard, v8-only
+   * feature safely after
+   * https://github.com/tc39/proposal-error-stacks/issues/26#issuecomment-1675512619
+   * The feature is to make a safe `captureStackTrace` and
+   * `prepareStackTrace` available on the start compartment's
+   * `Error` object.
+   *
+   * While these features are omitted, the tests in
+   * test/error/test-tame-v8-error-unit.js
+   * test/error/test-tame-v8-error-unsafe.js
+   * test/error/test-tame-v8-error.js
+   * test/test-v8-callsite-properties.js
+   * have been turned into `test.skip`.
+   * If these features are re-enabled, those tests should be restored.
 
   // A prepareFn is a prepareStackTrace function.
   // An sst is a `structuredStackTrace`, which is an array of
@@ -332,6 +367,7 @@ export const tameV8ErrorConstructor = (
       configurable: true,
     },
   });
+  */
 
   return tamedMethods.getStackString;
 };

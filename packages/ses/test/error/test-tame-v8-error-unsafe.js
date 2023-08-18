@@ -51,7 +51,14 @@ function simulateDepd() {
   return site.name;
 }
 
-test('SES compartment error compatibility - minimal case', t => {
+/*
+ * Because of
+ * https://github.com/tc39/proposal-error-stacks/issues/26#issuecomment-1675512619
+ * in tame-v8-error-constructor, we have commented
+ * out the feature being tested here. Should we later restore the feature,
+ * we should also unskip this test.
+ */
+test.skip('SES compartment error compatibility - minimal case', t => {
   const c1 = new Compartment({ t });
   const result = c1.evaluate(`
     const obj = {};
@@ -63,7 +70,14 @@ test('SES compartment error compatibility - minimal case', t => {
   t.is(result, '');
 });
 
-test('SES compartment error compatibility - basic: prepareStackTrace accepts assignment', t => {
+/*
+ * Because of
+ * https://github.com/tc39/proposal-error-stacks/issues/26#issuecomment-1675512619
+ * in tame-v8-error-constructor, we have commented
+ * out the feature being tested here. Should we later restore the feature,
+ * we should also unskip this test.
+ */
+test.skip('SES compartment error compatibility - basic: prepareStackTrace accepts assignment', t => {
   const c1 = new Compartment({ t });
   const result = c1.evaluate(`
     const obj = {};
@@ -76,7 +90,14 @@ test('SES compartment error compatibility - basic: prepareStackTrace accepts ass
   t.is(result, '');
 });
 
-test('SES compartment error compatibility - functional prepareStackTrace', t => {
+/*
+ * Because of
+ * https://github.com/tc39/proposal-error-stacks/issues/26#issuecomment-1675512619
+ * in tame-v8-error-constructor, we have commented
+ * out the feature being tested here. Should we later restore the feature,
+ * we should also unskip this test.
+ */
+test.skip('SES compartment error compatibility - functional prepareStackTrace', t => {
   const c1 = new Compartment({ t });
   const result = c1.evaluate(`
     const prepareObjectStackTrace = (_, stack) => {
@@ -90,7 +111,14 @@ test('SES compartment error compatibility - functional prepareStackTrace', t => 
   t.is(result, '');
 });
 
-test('SES compartment error compatibility - endow w Error power', t => {
+/*
+ * Because of
+ * https://github.com/tc39/proposal-error-stacks/issues/26#issuecomment-1675512619
+ * in tame-v8-error-constructor, we have commented
+ * out the feature being tested here. Should we later restore the feature,
+ * we should also unskip this test.
+ */
+test.skip('SES compartment error compatibility - endow w Error power', t => {
   const c1 = new Compartment({ t, Error });
   const result = c1.evaluate(`
     const obj = {
@@ -109,7 +137,14 @@ test('SES compartment error compatibility - endow w Error power', t => {
   t.assert(result.startsWith('Pseudo Error\n  at '));
 });
 
-test('SES compartment error compatibility - endow w Error with locally configurable prepareStackTrace', t => {
+/*
+ * Because of
+ * https://github.com/tc39/proposal-error-stacks/issues/26#issuecomment-1675512619
+ * in tame-v8-error-constructor, we have commented
+ * out the feature being tested here. Should we later restore the feature,
+ * we should also unskip this test.
+ */
+test.skip('SES compartment error compatibility - endow w Error with locally configurable prepareStackTrace', t => {
   // The purpose of this test is mostly to ensure the Error in start compartment can be wrapped to provide prepareStackTrace functionality
   // and demonstrate how that could be implemented for packages which use the CallSite list.
   function createLocalError(Error) {
@@ -174,7 +209,14 @@ test('SES compartment error compatibility - endow w Error with locally configura
   `);
 });
 
-test('Error compatibility - depd', t => {
+/*
+ * Because of
+ * https://github.com/tc39/proposal-error-stacks/issues/26#issuecomment-1675512619
+ * in tame-v8-error-constructor, we have commented
+ * out the feature being tested here. Should we later restore the feature,
+ * we should also unskip this test.
+ */
+test.skip('Error compatibility - depd', t => {
   // the Start Compartment should support this sort of manipulation
   const name = simulateDepd();
   t.is(name, 'middle');
@@ -197,7 +239,14 @@ function simulateCallstack() {
   return middle();
 }
 
-test('Error compatibility - callstack', t => {
+/*
+ * Because of
+ * https://github.com/tc39/proposal-error-stacks/issues/26#issuecomment-1675512619
+ * in tame-v8-error-constructor, we have commented
+ * out the feature being tested here. Should we later restore the feature,
+ * we should also unskip this test.
+ */
+test.skip('Error compatibility - callstack', t => {
   const stack = simulateCallstack();
   // TODO: upgrade to tape 5.x for t.match
   // t.match(stack[0], /at middle/, '"middle" found in callstack() output');
@@ -235,7 +284,14 @@ function simulateCallsite() {
   return middle()[0].getFunctionName();
 }
 
-test('Error compatibility - callsite', t => {
+/*
+ * Because of
+ * https://github.com/tc39/proposal-error-stacks/issues/26#issuecomment-1675512619
+ * in tame-v8-error-constructor, we have commented
+ * out the feature being tested here. Should we later restore the feature,
+ * we should also unskip this test.
+ */
+test.skip('Error compatibility - callsite', t => {
   const name = simulateCallsite();
   t.is(name, 'middle');
 });
@@ -260,12 +316,26 @@ function simulateCallsites() {
   return middle()[0].getFunctionName();
 }
 
-test('Error compatibility - callsites', t => {
+/*
+ * Because of
+ * https://github.com/tc39/proposal-error-stacks/issues/26#issuecomment-1675512619
+ * in tame-v8-error-constructor, we have commented
+ * out the feature being tested here. Should we later restore the feature,
+ * we should also unskip this test.
+ */
+test.skip('Error compatibility - callsites', t => {
   const name = simulateCallsites();
   t.is(name, 'middle');
 });
 
-test('Error compatibility - save and restore prepareStackTrace', t => {
+/*
+ * Because of
+ * https://github.com/tc39/proposal-error-stacks/issues/26#issuecomment-1675512619
+ * in tame-v8-error-constructor, we have commented
+ * out the feature being tested here. Should we later restore the feature,
+ * we should also unskip this test.
+ */
+test.skip('Error compatibility - save and restore prepareStackTrace', t => {
   const pst1 = (_err, _sst) => 'x';
   Error.prepareStackTrace = pst1;
   t.is(Error().stack, 'x');

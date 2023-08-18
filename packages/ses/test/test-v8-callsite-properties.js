@@ -3,7 +3,14 @@ import '../index.js';
 
 lockdown({ errorTaming: 'unsafe' });
 
-test('callSite properties', t => {
+/*
+ * Because of
+ * https://github.com/tc39/proposal-error-stacks/issues/26#issuecomment-1675512619
+ * in tame-v8-error-constructor, we have commented
+ * out the feature being tested here. Should we later restore the feature,
+ * we should also unskip this test.
+ */
+test.skip('callSite properties', t => {
   function topFrame() {
     let sst;
     const orig = Error.prepareStackTrace;
