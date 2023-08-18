@@ -400,6 +400,22 @@ test('remotables - safety from the gibson042 attack', t => {
   });
 });
 
+test.failing('Unexpected stack on errors', t => {
+  let err;
+  try {
+    null.error;
+  } catch (e) {
+    err = e;
+  }
+
+  const carrierStack = {};
+  err.stack = carrierStack;
+  Object.freeze(err);
+
+  t.throws(() => passStyleOf(err));
+  err.stack.foo = 42;
+});
+
 test('Allow toStringTag overrides', t => {
   const alice = Far('Alice', { [Symbol.toStringTag]: 'DebugName: Allison' });
   t.is(passStyleOf(alice), 'remotable');
