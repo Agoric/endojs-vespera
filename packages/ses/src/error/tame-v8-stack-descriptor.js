@@ -13,10 +13,24 @@ const {
   freeze,
 } = Object;
 
+const {
+  __lookupGetter__: FERAL_LOOKUP_GETTER,
+  __lookupSetter__: FERAL_LOOKUP_SETTER,
+} = Object.prototype;
+
+const { getOwnPropertyDescriptor: FERAL_REFLECT_GOPD, apply } = Reflect;
+
+/** @type {((this:any) => any) | undefined} */
+let FERAL_STACK_GETTER;
+/** @type {((this:any, value: any) => void) | undefined} */
+let FERAL_STACK_SETTER;
+
 if ('captureStackTrace' in Error) {
   const err = Error('just for discovery');
-  const { get: FERAL_STACK_GETTER, set: FERAL_STACK_SETTER } =
-    FERAL_OBJECT_GOPD(err, 'stack');
+  ({ get: FERAL_STACK_GETTER, set: FERAL_STACK_SETTER } = FERAL_OBJECT_GOPD(
+    err,
+    'stack',
+  ));
   if (FERAL_STACK_GETTER) {
     // Freeze these hidden primordials before they become inaccessible.
     // Not handled through the normal SES primordial discovery, because
@@ -24,13 +38,6 @@ if ('captureStackTrace' in Error) {
     // in case they leak despite our efforts to hide them.
     freeze(FERAL_STACK_GETTER);
     freeze(FERAL_STACK_SETTER);
-
-    const { getOwnPropertyDescriptor: FERAL_REFLECT_GOPD, apply } = Reflect;
-
-    const {
-      __lookupGetter__: FERAL_LOOKUP_GETTER,
-      __lookupSetter__: FERAL_LOOKUP_SETTER,
-    } = Object.prototype;
 
     const silentStackGet = obj => {
       try {
@@ -140,3 +147,16 @@ if ('captureStackTrace' in Error) {
     });
   }
 }
+
+const EXPORTED_FERAL_STACK_GETTER = FERAL_STACK_GETTER;
+const EXPORTED_FERAL_STACK_SETTER = FERAL_STACK_SETTER;
+
+export {
+  FERAL_OBJECT_GOPD,
+  FERAL_OBJECT_GOPDS,
+  FERAL_LOOKUP_GETTER,
+  FERAL_LOOKUP_SETTER,
+  FERAL_REFLECT_GOPD,
+  EXPORTED_FERAL_STACK_GETTER as FERAL_STACK_GETTER,
+  EXPORTED_FERAL_STACK_SETTER as FERAL_STACK_SETTER,
+};
