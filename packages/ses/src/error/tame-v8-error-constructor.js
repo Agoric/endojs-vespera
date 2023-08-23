@@ -1,3 +1,5 @@
+/* eslint-disable no-restricted-globals */
+/* eslint-disable @endo/no-polymorphic-call */
 import {
   WeakMap,
   WeakSet,
@@ -257,14 +259,40 @@ export const tameV8ErrorConstructor = (
       return stackString;
     },
     prepareStackTrace(error, sst) {
+      let result = '';
       if (errorTaming === 'unsafe') {
         const stackString = stackStringFromSST(error, sst);
         weakmapSet(stackInfos, error, { stackString });
-        return `${error}${stackString}`;
+        result = `${error}${stackString}`;
       } else {
         weakmapSet(stackInfos, error, { callSites: sst });
-        return '';
       }
+      try {
+        // "reduntantly" defineProperties to stay safe after
+        // https://github.com/tc39/proposal-error-stacks/issues/26#issuecomment-1675512619
+        defineProperties(error, {
+          stack: {
+            value: result,
+            writable: false,
+            enumerable: false,
+            configurable: false,
+          },
+        });
+      } catch (er) {
+        const desc = Object.getOwnPropertyDescriptor(error, 'stack');
+        if (
+          desc !== undefined &&
+          desc.writable === false &&
+          desc.enumerable === false &&
+          desc.configurable === false &&
+          result !== desc.value
+        ) {
+          // const q = JSON.stringify;
+          throw TypeError(`${er.stack}\n\nsince\n\n${result}\n\nvs\n\n${desc.value}\n\n`);
+        }
+        throw er;
+      }
+      return result;
     },
   };
 
